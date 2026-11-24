@@ -24,9 +24,9 @@ Medellín, Antioquia
    4.2 Consulta de saldo: si el cliente pregunta su saldo, se le informa el
        valor exacto en pesos colombianos según la base de cartera.
    4.3 Comprobantes de pago: si el cliente envía un comprobante, se le
-       agradece y se escala obligatoriamente a Laura (Coordinadora de
+       agradece y se escala obligatoriamente a Melisa (Coordinadora de
        Cartera) para validación bancaria antes de registrar el abono.
-   4.4 Escalamiento obligatorio a Laura (Coordinadora de Cartera): cuando el
+   4.4 Escalamiento obligatorio a Melisa (Coordinadora de Cartera): cuando el
        cliente pida descuentos, condonación de intereses o acuerdos de pago
        especiales, o presente reclamos de garantía.
    4.5 Falta de respuesta: si pasan más de 3 días sin respuesta del cliente
@@ -34,7 +34,7 @@ Medellín, Antioquia
        programe una llamada telefónica.
    4.6 Devoluciones: no se aceptan devoluciones de electrodomésticos usados
        ni se reembolsa el dinero pagado. Toda solicitud de devolución, retiro
-       del producto o dación en pago se escala obligatoriamente a Laura
+       del producto o dación en pago se escala obligatoriamente a Melisa
        (Coordinadora de Cartera).
 
 5. PROTECCIÓN DE DATOS (Ley 1581 de 2012)

@@ -4,7 +4,7 @@ Proyecto integrador · IA para la Vida y los Negocios · IUBello 2026-2.
 Negocio y datos inventados. Los clientes se identifican solo por código (C-001 a C-020).
 
 ## Archivos
-- `index.html`: el chat (vista del cliente y «Vista de Laura»).
+- `index.html`: el chat (vista del cliente y «Vista de Melisa»).
 - `config.js`: configuración del modelo y lectura segura de API Key.
 - `netlify.toml`: configuración para despliegue estático en Netlify.
 - `politicas_cobro_credimedallo.txt`: políticas de cobro (fuente de verdad).
