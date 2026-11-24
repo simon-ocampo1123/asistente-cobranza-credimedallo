@@ -251,12 +251,32 @@ async function preguntar(msg){
   contents,
   generationConfig:{temperature:0.2,responseMimeType:"application/json"}
  };
- const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
- const data=await res.json();
- if(!res.ok) throw new Error((data.error&&data.error.message)||("HTTP "+res.status));
- const text=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("");
- return parse(text);
+ // Si Google está saturado (503/429/500), reintenta con espera y luego prueba modelos de respaldo.
+ const modelos=[MODEL,...RESPALDO.filter(m=>m!==MODEL)];
+ let ultimo=null;
+ for(const modelo of modelos){
+  for(let intento=0;intento<3;intento++){
+   if(intento>0) await new Promise(ok=>setTimeout(ok,1500*intento));
+   let res,data;
+   try{
+    res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(API_KEY)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    data=await res.json();
+   }catch(e){ultimo=e;continue;}
+   if(res.ok){
+    const text=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+    if(text) return parse(text);
+    ultimo=new Error("respuesta vacía");continue;
+   }
+   ultimo=new Error((data.error&&data.error.message)||("HTTP "+res.status));
+   ultimo.status=res.status;
+   if(![429,500,503].includes(res.status)) break; // otro error: no insistir con este modelo
+  }
+  if(ultimo&&[400,401,403].includes(ultimo.status)) break; // clave o petición inválida: los respaldos fallarían igual
+ }
+ if(ultimo&&[429,500,503].includes(ultimo.status)) throw new Error("El servicio de IA está muy ocupado en este momento. Intente de nuevo en unos segundos.");
+ throw ultimo||new Error("No hubo respuesta del servicio de IA.");
 }
+const RESPALDO=["gemini-flash-lite-latest","gemini-flash-latest"];
 
 $("f").addEventListener("submit",async ev=>{
  ev.preventDefault();
@@ -275,6 +295,7 @@ $("f").addEventListener("submit",async ev=>{
  }catch(e){
   typing.remove();
   sys("No se pudo responder: "+e.message);
+  t.value=t.value||msg; ajustar(); // deja el mensaje listo para reenviarlo
  }finally{b.disabled=false;enLinea();t.focus();}
 });
 t.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();$("f").requestSubmit();}});
