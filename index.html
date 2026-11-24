@@ -6,57 +6,97 @@
 <title>CrediMedallo Hogar · Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-/* VOICE: un chat de atención real, tranquilo y confiable.
-   IDEA: el WhatsApp de la empresa; la vista de Melisa queda detrás de un interruptor.
-   PICTURE: la conversación ocupa la pantalla; burbujas, encabezado verde, fondo de chat.
-   COLOUR and TYPE: verde WhatsApp #075e54, fondo #efeae2, burbujas blancas y verde claro; ámbar solo para escalamientos; Figtree.
-   LAYOUT: una columna centrada de hasta 760px; en móvil ocupa todo el ancho. */
+/* VOICE: una asistente virtual de atención real: cercana, rápida y confiable.
+   IDEA: la conversación con la asistente de la empresa; la vista de Melisa queda detrás de un interruptor.
+   PICTURE: encabezado con avatar y estado "en línea", burbujas con avatar, sugerencias rápidas, indicador de escritura animado.
+   COLOUR and TYPE: verde CrediMedallo #075e54 → #128c7e; fondo de chat #efeae2 con patrón sutil; ámbar solo para la vista de Melisa; Figtree.
+   LAYOUT: una columna centrada de hasta 760px; en móvil ocupa todo el ancho; en escritorio flota como tarjeta. */
 :root{color-scheme:light dark;
---bg:light-dark(#dfe5e2,#0c1317);--ink:light-dark(#111b21,#e9edef);--mute:light-dark(#667781,#8696a0);
---brand:#075e54;--brand2:light-dark(#128c7e,#25a98f);--chat:light-dark(#efeae2,#0b141a);
+--bg:light-dark(#d7e0dc,#070c0f);--ink:light-dark(#111b21,#e9edef);--mute:light-dark(#667781,#8696a0);
+--brand:#075e54;--brand2:light-dark(#0f7a6c,#25a98f);--ok:#25d366;--chat:light-dark(#efeae2,#0b141a);
+--dots:light-dark(rgba(7,94,84,.07),rgba(255,255,255,.035));
 --me:light-dark(#d9fdd3,#005c4b);--them:light-dark(#ffffff,#202c33);--card:light-dark(#ffffff,#111b21);
---line:light-dark(#d1d7db,#2a3942);--warn:light-dark(#b45309,#f0a645);--warnbg:light-dark(#fff4e0,#2c2112)}
+--chip:light-dark(#ffffff,#1a262d);--chipline:light-dark(#bfe3dc,#2a3942);
+--line:light-dark(#d1d7db,#2a3942);--warn:light-dark(#b45309,#f0a645);--warnbg:light-dark(#fff7e8,#2c2112)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Figtree,system-ui,sans-serif;overflow-x:clip;display:flex;justify-content:center}
-.app{width:100%;max-width:760px;height:100dvh;display:flex;flex-direction:column;background:var(--chat);box-shadow:0 0 40px rgba(0,0,0,.15)}
-.bar{background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px}
-.av{width:42px;height:42px;flex:none;border-radius:50%;background:#fff;color:var(--brand);display:grid;place-items:center;font-weight:800}
-.who{flex:1}.who b{display:block;font-size:17px}.who small{opacity:.85;font-size:13px}
-.sw{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;min-height:44px;user-select:none}
-.sw input{width:20px;height:20px;accent-color:#25d366}
-#log{flex:1;overflow-y:auto;padding:16px clamp(10px,3vw,24px);display:flex;flex-direction:column;gap:6px}
-.msg{max-width:min(82%,520px);padding:7px 10px 6px;border-radius:9px;box-shadow:0 1px .5px rgba(0,0,0,.13);white-space:pre-wrap;overflow-wrap:anywhere}
-.me{align-self:flex-end;background:var(--me);border-top-right-radius:2px}
-.them{align-self:flex-start;background:var(--them);border-top-left-radius:2px}
-.time{display:block;text-align:right;font-size:13px;color:var(--mute);margin-top:2px}
-.sys{align-self:center;font-size:13px;color:var(--mute);background:var(--card);padding:5px 12px;border-radius:8px;text-align:center;max-width:90%}
-.typing{align-self:flex-start;background:var(--them);padding:10px 14px;border-radius:9px;color:var(--mute);font-size:14px}
-.melisa{align-self:stretch;margin:2px 0 8px;background:var(--warnbg);border:1px dashed var(--warn);border-radius:10px;padding:10px 12px;font-size:14px;display:none}
+.app{width:100%;max-width:760px;height:100dvh;display:flex;flex-direction:column;background:var(--chat);box-shadow:0 10px 50px rgba(0,0,0,.18);overflow:hidden}
+@media(min-width:800px){body{padding:24px 0}.app{height:calc(100dvh - 48px);border-radius:20px}}
+
+/* Encabezado */
+.bar{position:relative;z-index:1;background:linear-gradient(135deg,#075e54,#0f7a6c);color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.av{position:relative;width:46px;height:46px;flex:none;border-radius:50%;background:#fff;color:var(--brand);display:grid;place-items:center;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.av svg{width:26px;height:26px}
+.av::after{content:"";position:absolute;right:0;bottom:1px;width:12px;height:12px;border-radius:50%;background:var(--ok);border:2px solid #0b6b5f}
+.who{flex:1}
+.who b{display:block;font-size:17px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{display:block;opacity:.9;font-size:13px}
+.sw{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;min-height:44px;user-select:none;white-space:nowrap}
+.sw input{appearance:none;position:relative;width:40px;height:24px;margin:0;border-radius:12px;background:rgba(255,255,255,.28);cursor:pointer;transition:background .2s}
+.sw input::before{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.sw input:checked{background:var(--ok)}
+.sw input:checked::before{transform:translateX(16px)}
+@media(max-width:480px){.sw span{display:none}}
+
+/* Conversación */
+#log{flex:1;overflow-y:auto;padding:18px clamp(10px,3vw,24px);display:flex;flex-direction:column;gap:8px;background-color:var(--chat);background-image:radial-gradient(var(--dots) 1.2px,transparent 1.6px);background-size:20px 20px}
+.row{align-self:flex-start;display:flex;align-items:flex-end;gap:8px;max-width:min(88%,560px)}
+.mini{width:30px;height:30px;flex:none;border-radius:50%;background:linear-gradient(135deg,#075e54,#128c7e);color:#fff;display:grid;place-items:center}
+.mini svg{width:17px;height:17px}
+.msg{max-width:min(82%,520px);padding:8px 12px 6px;border-radius:16px;box-shadow:0 1px 1.5px rgba(0,0,0,.1);white-space:pre-wrap;overflow-wrap:anywhere}
+.row .msg{max-width:100%}
+.me{align-self:flex-end;background:var(--me);border-bottom-right-radius:4px}
+.them{background:var(--them);border-bottom-left-radius:4px}
+.time{display:flex;justify-content:flex-end;align-items:center;gap:4px;font-size:12px;color:var(--mute);margin-top:2px}
+.tick{width:16px;height:16px;color:#53bdeb}
+.sys{align-self:center;font-size:12.5px;color:var(--mute);background:var(--card);padding:5px 14px;border-radius:999px;text-align:center;max-width:90%;box-shadow:0 1px 1px rgba(0,0,0,.06)}
+.typing{background:var(--them);padding:12px 14px;border-radius:16px;border-bottom-left-radius:4px;display:flex;gap:4px;box-shadow:0 1px 1.5px rgba(0,0,0,.1)}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--mute);opacity:.5}
+
+/* Sugerencias rápidas */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 6px 38px}
+.chip{font:600 14px Figtree,system-ui,sans-serif;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--chipline);background:var(--chip);color:var(--brand2);cursor:pointer;transition:background .15s,transform .15s}
+.chip:hover{background:light-dark(#e7f6f2,#22333b)}
+.chip:active{transform:scale(.97)}
+
+/* Vista de Melisa */
+.melisa{align-self:stretch;margin:2px 0 8px 38px;background:var(--warnbg);border:1px solid light-dark(#f3d9a8,#4a3a1f);border-left:4px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;display:none}
 .on .melisa{display:block}
 .melisa b{color:var(--warn)}
-.melisa .r{display:inline-block;background:var(--brand);color:#fff;border-radius:6px;padding:2px 8px;font-weight:600;margin:4px 0}
+.melisa .r{display:inline-block;background:var(--brand);color:#fff;border-radius:999px;padding:2px 10px;font-weight:600;font-size:13px;margin:6px 0 2px}
 .melisa p{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
-form{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line)}
-textarea{flex:1;font:16px/1.4 Figtree,system-ui,sans-serif;padding:11px 16px;border-radius:22px;border:1px solid var(--line);background:var(--chat);color:var(--ink);resize:none;min-height:46px;max-height:120px}
-button{font:600 15px Figtree,system-ui,sans-serif;min-height:46px;min-width:46px;border-radius:23px;border:0;cursor:pointer;background:var(--brand2);color:#fff;padding:0 18px}
-button:disabled{opacity:.5;cursor:wait}
-button:focus-visible,textarea:focus-visible,.sw input:focus-visible{outline:3px solid #25d366;outline-offset:2px}
-.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 14px 10px;background:var(--card);font-size:13px;color:var(--mute)}
-.foot button{background:transparent;color:var(--brand2);min-height:36px;padding:0 6px;font-size:13px}
-@media(prefers-reduced-motion:no-preference){.msg{animation:in .16s ease-out}@keyframes in{from{opacity:0;transform:translateY(5px)}}}
+
+/* Caja de mensaje */
+form{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;background:var(--card);border-top:1px solid var(--line)}
+textarea{flex:1;font:16px/1.4 Figtree,system-ui,sans-serif;padding:12px 18px;border-radius:24px;border:1px solid var(--line);background:var(--chat);color:var(--ink);resize:none;min-height:48px;max-height:140px;transition:border-color .15s}
+textarea:focus{border-color:var(--brand2)}
+#b{flex:none;width:48px;height:48px;padding:0;border-radius:50%;border:0;cursor:pointer;background:var(--brand2);color:#fff;display:grid;place-items:center;box-shadow:0 2px 6px rgba(7,94,84,.35);transition:transform .15s,opacity .15s}
+#b svg{width:22px;height:22px;margin-left:2px}
+#b:hover{transform:scale(1.05)}
+#b:disabled{opacity:.5;cursor:wait;transform:none}
+#b:focus-visible,textarea:focus-visible,.sw input:focus-visible,.chip:focus-visible,.foot button:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 14px 10px;background:var(--card);font-size:12.5px;color:var(--mute)}
+.foot button{font:600 13px Figtree,system-ui,sans-serif;background:transparent;border:0;color:var(--brand2);min-height:36px;padding:0 6px;cursor:pointer}
+
+@media(prefers-reduced-motion:no-preference){
+.msg,.row,.chips,.melisa{animation:in .2s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.typing i{animation:dot 1.2s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1}}}
 </style>
 </head>
 <body>
 <div class="app" id="app">
 <div class="bar">
-<div class="av" aria-hidden="true">CM</div>
-<div class="who"><b>CrediMedallo Hogar</b><small>Cartera · asistente con revisión de Melisa</small></div>
-<label class="sw"><input type="checkbox" id="mode"> Vista de Melisa</label>
+<div class="av" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><circle cx="8.5" cy="12" r=".6" fill="currentColor"/><circle cx="12" cy="12" r=".6" fill="currentColor"/><circle cx="15.5" cy="12" r=".6" fill="currentColor"/></svg></div>
+<div class="who"><b>Asistente CrediMedallo Hogar</b><small id="st">En línea · responde al instante</small></div>
+<label class="sw"><input type="checkbox" id="mode" aria-label="Vista de Melisa"><span>Vista de Melisa</span></label>
 </div>
 <div id="log" aria-live="polite"></div>
-<form id="f"><textarea id="t" rows="1" placeholder="Escriba un mensaje" aria-label="Mensaje"></textarea><button id="b" type="submit" aria-label="Enviar">Enviar</button></form>
+<form id="f"><textarea id="t" rows="1" placeholder="Escriba su mensaje…" aria-label="Mensaje"></textarea><button id="b" type="submit" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15 12 3.4 13.8z"/></svg></button></form>
 <div class="foot"><span>Negocio y datos inventados · proyecto académico IUBello 2026-2</span><button type="button" id="clear">Nueva conversación</button></div>
 </div>
 
@@ -147,12 +187,31 @@ const FORMATO = `Responde SIEMPRE SOLO con un objeto JSON: {"ruta": "etiqueta ex
 
 
 const $=id=>document.getElementById(id);
-const log=$("log"),t=$("t"),b=$("b"),app=$("app");
+const log=$("log"),t=$("t"),b=$("b"),app=$("app"),st=$("st");
 let hist=[];
 const hora=()=>new Date().toLocaleTimeString("es-CO",{hour:"numeric",minute:"2-digit"});
 const words=s=>(String(s).trim().match(/\S+/g)||[]).length;
-function add(cls,text){const d=document.createElement("div");d.className="msg "+cls;d.textContent=text;const s=document.createElement("span");s.className="time";s.textContent=hora();d.appendChild(s);log.appendChild(d);log.scrollTop=log.scrollHeight;return d;}
-function sys(text){const d=document.createElement("div");d.className="sys";d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight;return d;}
+const ICONO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+const TICK='<svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13l4 4L14 8"/><path d="M10 15l2 2 9-9"/></svg>';
+const abajo=()=>{log.scrollTop=log.scrollHeight;};
+function fila(nodo){const r=document.createElement("div");r.className="row";const m=document.createElement("div");m.className="mini";m.innerHTML=ICONO;r.append(m,nodo);log.appendChild(r);return r;}
+function add(cls,text){
+ const d=document.createElement("div");d.className="msg "+cls;d.textContent=text;
+ const s=document.createElement("span");s.className="time";s.textContent=hora();
+ if(cls==="me")s.insertAdjacentHTML("beforeend",TICK);
+ d.appendChild(s);
+ if(cls==="them")fila(d);else log.appendChild(d);
+ abajo();return d;
+}
+function sys(text){const d=document.createElement("div");d.className="sys";d.textContent=text;log.appendChild(d);abajo();return d;}
+function escribiendo(){const d=document.createElement("div");d.className="typing";d.setAttribute("aria-label","escribiendo");d.innerHTML="<i></i><i></i><i></i>";st.textContent="escribiendo…";return fila(d);}
+function enLinea(){st.textContent="En línea · responde al instante";}
+const SUGERENCIAS=[["Consultar mi saldo","Quiero consultar mi saldo"],["Medios de pago","¿Cuáles son los medios de pago?"],["Horario de atención","¿Cuál es el horario de atención?"],["Productos a crédito","¿Qué productos venden a crédito?"]];
+function sugerencias(){
+ const c=document.createElement("div");c.className="chips";c.id="chips";
+ for(const [txt,msg] of SUGERENCIAS){const k=document.createElement("button");k.type="button";k.className="chip";k.textContent=txt;k.addEventListener("click",()=>{t.value=msg;$("f").requestSubmit();});c.appendChild(k);}
+ log.appendChild(c);abajo();
+}
 function melisa(r){
  const d=document.createElement("div");d.className="melisa";
  const h=document.createElement("b");h.textContent="Vista de Melisa · el cliente no ve esto";d.appendChild(h);d.appendChild(document.createElement("br"));
@@ -160,12 +219,14 @@ function melisa(r){
  const line=(lbl,v)=>{if(!v)return;const p=document.createElement("p");p.textContent=lbl+v;d.appendChild(p);};
  if(r.borrador) line("Borrador: ",words(r.borrador)+" palabras · Melisa lo aprueba antes de enviarlo");
  line("",r.ficha); line("Notas: ",r.notas);
- log.appendChild(d);log.scrollTop=log.scrollHeight;
+ log.appendChild(d);abajo();
 }
 function parse(text){const m=String(text).match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0]);}catch(e){}}return {ruta:"",borrador:String(text),ficha:"",notas:""};}
-function start(){log.innerHTML="";hist=[];sys("Hoy");add("them","¡Hola! Bienvenido a CrediMedallo Hogar. Para ayudarle con su crédito, escríbanos su consulta junto con su código de cliente (por ejemplo, C-000).");}
+function start(){log.innerHTML="";hist=[];enLinea();sys("Hoy");add("them","¡Hola! Bienvenido a CrediMedallo Hogar. Para ayudarle con su crédito, escríbanos su consulta junto con su código de cliente (por ejemplo, C-000).");sugerencias();}
 start();
-$("mode").addEventListener("change",e=>app.classList.toggle("on",e.target.checked));
+const ajustar=()=>{t.style.height="auto";t.style.height=Math.min(t.scrollHeight,140)+"px";};
+t.addEventListener("input",ajustar);
+$("mode").addEventListener("change",e=>{app.classList.toggle("on",e.target.checked);abajo();});
 $("clear").addEventListener("click",()=>{start();t.focus();});
 if(!API_KEY||API_KEY.startsWith("PEGA")){sys("Falta configurar la clave de la API en config.js.");}
 let POLITICAS="",BASE="";
@@ -199,9 +260,10 @@ async function preguntar(msg){
 
 $("f").addEventListener("submit",async ev=>{
  ev.preventDefault();
- const msg=t.value.trim(); if(!msg) return;
- t.value=""; add("me",msg); b.disabled=true;
- const typing=document.createElement("div");typing.className="typing";typing.textContent="escribiendo…";log.appendChild(typing);log.scrollTop=log.scrollHeight;
+ const msg=t.value.trim(); if(!msg||b.disabled) return;
+ $("chips")?.remove();
+ t.value=""; ajustar(); add("me",msg); b.disabled=true;
+ const typing=escribiendo();abajo();
  try{
   await listo;
   const r=await preguntar(msg);
@@ -213,7 +275,7 @@ $("f").addEventListener("submit",async ev=>{
  }catch(e){
   typing.remove();
   sys("No se pudo responder: "+e.message);
- }finally{b.disabled=false;t.focus();}
+ }finally{b.disabled=false;enLinea();t.focus();}
 });
 t.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();$("f").requestSubmit();}});
 }
