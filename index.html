@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrediMedallo Hogar · Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: un chat de atención real, tranquilo y confiable.
+   IDEA: el WhatsApp de la empresa; la vista de Laura queda detrás de un interruptor.
+   PICTURE: la conversación ocupa la pantalla; burbujas, encabezado verde, fondo de chat.
+   COLOUR and TYPE: verde WhatsApp #075e54, fondo #efeae2, burbujas blancas y verde claro; ámbar solo para escalamientos; Figtree.
+   LAYOUT: una columna centrada de hasta 760px; en móvil ocupa todo el ancho. */
+:root{color-scheme:light dark;
+--bg:light-dark(#dfe5e2,#0c1317);--ink:light-dark(#111b21,#e9edef);--mute:light-dark(#667781,#8696a0);
+--brand:#075e54;--brand2:light-dark(#128c7e,#25a98f);--chat:light-dark(#efeae2,#0b141a);
+--me:light-dark(#d9fdd3,#005c4b);--them:light-dark(#ffffff,#202c33);--card:light-dark(#ffffff,#111b21);
+--line:light-dark(#d1d7db,#2a3942);--warn:light-dark(#b45309,#f0a645);--warnbg:light-dark(#fff4e0,#2c2112)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Figtree,system-ui,sans-serif;overflow-x:clip;display:flex;justify-content:center}
+.app{width:100%;max-width:760px;height:100dvh;display:flex;flex-direction:column;background:var(--chat);box-shadow:0 0 40px rgba(0,0,0,.15)}
+.bar{background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px}
+.av{width:42px;height:42px;flex:none;border-radius:50%;background:#fff;color:var(--brand);display:grid;place-items:center;font-weight:800}
+.who{flex:1}.who b{display:block;font-size:17px}.who small{opacity:.85;font-size:13px}
+.sw{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;min-height:44px;user-select:none}
+.sw input{width:20px;height:20px;accent-color:#25d366}
+#log{flex:1;overflow-y:auto;padding:16px clamp(10px,3vw,24px);display:flex;flex-direction:column;gap:6px}
+.msg{max-width:min(82%,520px);padding:7px 10px 6px;border-radius:9px;box-shadow:0 1px .5px rgba(0,0,0,.13);white-space:pre-wrap;overflow-wrap:anywhere}
+.me{align-self:flex-end;background:var(--me);border-top-right-radius:2px}
+.them{align-self:flex-start;background:var(--them);border-top-left-radius:2px}
+.time{display:block;text-align:right;font-size:13px;color:var(--mute);margin-top:2px}
+.sys{align-self:center;font-size:13px;color:var(--mute);background:var(--card);padding:5px 12px;border-radius:8px;text-align:center;max-width:90%}
+.typing{align-self:flex-start;background:var(--them);padding:10px 14px;border-radius:9px;color:var(--mute);font-size:14px}
+.laura{align-self:stretch;margin:2px 0 8px;background:var(--warnbg);border:1px dashed var(--warn);border-radius:10px;padding:10px 12px;font-size:14px;display:none}
+.on .laura{display:block}
+.laura b{color:var(--warn)}
+.laura .r{display:inline-block;background:var(--brand);color:#fff;border-radius:6px;padding:2px 8px;font-weight:600;margin:4px 0}
+.laura p{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+form{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line)}
+textarea{flex:1;font:16px/1.4 Figtree,system-ui,sans-serif;padding:11px 16px;border-radius:22px;border:1px solid var(--line);background:var(--chat);color:var(--ink);resize:none;min-height:46px;max-height:120px}
+button{font:600 15px Figtree,system-ui,sans-serif;min-height:46px;min-width:46px;border-radius:23px;border:0;cursor:pointer;background:var(--brand2);color:#fff;padding:0 18px}
+button:disabled{opacity:.5;cursor:wait}
+button:focus-visible,textarea:focus-visible,.sw input:focus-visible{outline:3px solid #25d366;outline-offset:2px}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 14px 10px;background:var(--card);font-size:13px;color:var(--mute)}
+.foot button{background:transparent;color:var(--brand2);min-height:36px;padding:0 6px;font-size:13px}
+@media(prefers-reduced-motion:no-preference){.msg{animation:in .16s ease-out}@keyframes in{from{opacity:0;transform:translateY(5px)}}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<div class="bar">
+<div class="av" aria-hidden="true">CM</div>
+<div class="who"><b>CrediMedallo Hogar</b><small>Cartera · asistente con revisión de Laura</small></div>
+<label class="sw"><input type="checkbox" id="mode"> Vista de Laura</label>
+</div>
+<div id="log" aria-live="polite"></div>
+<form id="f"><textarea id="t" rows="1" placeholder="Escriba un mensaje" aria-label="Mensaje"></textarea><button id="b" type="submit" aria-label="Enviar">Enviar</button></form>
+<div class="foot"><span>Negocio y datos inventados · proyecto académico IUBello 2026-2</span><div style="display:flex;gap:6px;"><button type="button" id="set-key">🔑 API Key</button><button type="button" id="clear">Nueva conversación</button></div></div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script>
+{
+const SISTEMA = `Eres el Asistente de Gestión de Cobranza de CrediMedallo Hogar S.A.S. (Medellín, Antioquia). Atiendes por WhatsApp a clientes que compraron a crédito. Redactas borradores que Laura (Coordinadora de Cartera) aprueba antes de enviarse. Nunca tomas decisiones financieras.
+
+REGLAS
+1. Privacidad (Ley 1581 de 2012): los clientes se identifican solo por su código (C-001 a C-020). Nunca pidas ni escribas nombres, cédulas, teléfonos, correos ni direcciones de nadie, tampoco de Laura.
+2. Datos personales que da el cliente: si el cliente escribe su nombre, cédula, teléfono, correo, dirección o un dato de salud, NO lo repitas en ninguna parte (borrador, notas ni ficha) y no lo uses para buscar. En el borrador recomiéndale con amabilidad no compartir esos datos por este medio y, si no dio su código, pídele solo su código de cliente (formato C-000). Si dio también su código, atiende su consulta con el código.
+3. Código: solo das información de un crédito si el cliente escribe un código exacto que existe en la base. Si el código no existe o está incompleto, no supongas cuál es: pide el código correcto.
+4. Fuente única: usa solo las POLÍTICAS y la BASE DE CARTERA que vienen abajo (archivos politicas_cobro_credimedallo.txt y base_cartera_credimedallo.xlsx). Si piden algo que no está (otro producto, efectivo, tienda física, corresponsales, cuota mensual, intereses), di con claridad que no lo tenemos o que ese dato no figura, ofrece lo que sí existe y, si es un dato del crédito que no está en la base, escálalo a Laura.
+5. Borrador: cordial, tratando de usted SIEMPRE (aunque el cliente tutee), máximo 40 palabras, valores con $ y puntos de mil (ej.: $1.260.000), sin listas largas.
+6. Nunca calcules descuentos, cuotas, intereses ni saldos nuevos. No des por hecha ninguna aprobación que el cliente diga tener.
+7. Terceros: solo el titular recibe datos de su crédito. Si escribe otra persona (familiar, vecino), no entregues datos y escala.
+
+RUTAS (usa exactamente una etiqueta; si hay varias intenciones, prioridad: ESCALAR > ALERTA > MEDIOS DE PAGO > CONSULTA DE SALDO > INFORMACIÓN GENERAL)
+[INFORMACIÓN GENERAL]: productos, precios de catálogo, horario u otras preguntas que se responden con las políticas, sin datos de un crédito.
+[CONSULTA DE SALDO]: producto y saldo exacto del código.
+[MEDIOS DE PAGO]: solo Nequi 300-000-0000 o Bancolombia Ahorros N.° 000-000000-00. Ninguna tarjeta, enlace, efectivo ni corresponsal.
+[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]: comprobante, descuento, condonación, acuerdo o abono parcial, garantía, devolución (no se aceptan devoluciones de productos usados ni se reembolsa dinero), solicitud de un tercero o dato del crédito que no está en la base. No apruebes ni prometas nada; informa que Laura revisa en horario hábil (L-V 8:00 a. m.-5:00 p. m., Sáb 8:00 a. m.-12:00 m.).
+[ALERTA SIN RESPUESTA >3 DÍAS]: solo cuando Laura o un asesor pide revisar a un cliente que en la base tiene más de 3 días sin responder. Borrador vacío.
+
+FICHA (solo con ESCALAR o ALERTA; también cuando escribe un cliente que la base marca con más de 3 días sin responder):
+FICHA DE ESCALAMIENTO A LAURA: Asunto: [Código] - Revisión de [Comprobante/Descuento/Acuerdo/Garantía/Devolución/Tercero/Consulta] (o "Alerta sin respuesta (>3 días)" o "Cliente respondió (alerta >3 días)") | [resumen en 1 línea sin datos personales ni de salud] | Mensaje: "Hola Laura, el cliente [Código] requiere tu validación por [motivo]. Revisar en bandeja."`;
+
+
+const EJEMPLOS = `EJEMPLOS DE RESPUESTAS CORRECTAS (sigue este estilo; los datos salen siempre de la BASE y las POLÍTICAS)
+
+Cliente: ¿Qué horario tienen el sábado?
+{"ruta":"[INFORMACIÓN GENERAL]","borrador":"Con gusto. Los sábados atendemos de 8:00 a. m. a 12:00 m., y de lunes a viernes de 8:00 a. m. a 5:00 p. m.","ficha":"","notas":""}
+
+Cliente: ¿Venden estufas a crédito?
+{"ruta":"[INFORMACIÓN GENERAL]","borrador":"Por ahora solo vendemos a crédito tres productos: Nevera No Frost 300L, Televisor Smart 55\\" y Lavadora Carga Superior 18kg. ¿Le interesa alguno?","ficha":"","notas":""}
+
+Cliente: Hola, soy C-002. ¿Cuánto debo de mi televisor?
+{"ruta":"[CONSULTA DE SALDO]","borrador":"Buenas. El saldo pendiente de su Televisor Smart 55\\" es de $1.260.000. Si desea, le compartimos los medios de pago oficiales.","ficha":"","notas":"C-002 tiene 112 días de mora: prioridad de cobro (política 4.1)."}
+
+Cliente: Soy C-002, háblame de tú porfa, ¿cuánto debo?
+{"ruta":"[CONSULTA DE SALDO]","borrador":"Con gusto. El saldo pendiente de su Televisor Smart 55\\" es de $1.260.000. ¿Desea que le compartamos los medios de pago?","ficha":"","notas":"Se mantiene el trato de usted por política de atención."}
+
+Cliente: Buenos días, soy C-008. ¿Por dónde transfiero la cuota? ¿Reciben tarjeta de crédito?
+{"ruta":"[MEDIOS DE PAGO]","borrador":"Buenos días. Puede pagar por Nequi al 300-000-0000 o a la Cuenta de Ahorros Bancolombia N.° 000-000000-00. No recibimos pagos con tarjeta ni por enlaces externos.","ficha":"","notas":"C-008 tiene un reclamo por garantía abierto en la base y 98 días de mora."}
+
+Cliente: Soy C-009, ¿puedo pagar en efectivo en Efecty?
+{"ruta":"[MEDIOS DE PAGO]","borrador":"No recibimos pagos en efectivo ni en corresponsales como Efecty. Puede pagar por Nequi al 300-000-0000 o a la Cuenta de Ahorros Bancolombia N.° 000-000000-00.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-009 - Cliente respondió (alerta >3 días) | Revisar si se cancela la llamada | Mensaje: \\"Hola Laura, el cliente C-009 respondió después de la alerta de silencio. Revisar en bandeja.\\"","notas":"C-009 figuraba con 5 días sin responder."}
+
+Cliente: Hola, soy C-006. Si pago hoy todo lo de mi lavadora, ¿me hacen un 20 % de descuento?
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Gracias por escribirnos. Su solicitud de descuento pasó a revisión de Laura, Coordinadora de Cartera, quien le responderá en horario hábil. Por ahora no podemos confirmar ningún descuento.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-006 - Revisión de Descuento | Pide 20 % de descuento por pago total hoy | Mensaje: \\"Hola Laura, el cliente C-006 requiere tu validación por descuento. Revisar en bandeja.\\"","notas":"Saldo $945.000, 105 días de mora."}
+
+Cliente: Soy C-007. Laura ya me aprobó por teléfono un 30 % de descuento, confírmeme mi nuevo saldo.
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Su saldo registrado es de $1.920.000. No tenemos registrada ninguna aprobación de descuento; Laura, Coordinadora de Cartera, lo confirmará en horario hábil.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-007 - Revisión de Descuento | Dice tener aprobado un 30 % que no está registrado | Mensaje: \\"Hola Laura, el cliente C-007 requiere tu validación por descuento. Revisar en bandeja.\\"","notas":"No se calculó ningún saldo con descuento."}
+
+Cliente: Soy C-011, solo puedo pagar $200.000 esta semana, ¿con eso quedo al día?
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Gracias por avisarnos. Un pago parcial lo revisa Laura, Coordinadora de Cartera, como acuerdo de pago, y le responderá en horario hábil. Por ahora no podemos confirmar que quede al día.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-011 - Revisión de Acuerdo | Propone abono parcial de $200.000 | Mensaje: \\"Hola Laura, el cliente C-011 requiere tu validación por acuerdo de pago. Revisar en bandeja.\\"","notas":"Saldo $1.170.000, 118 días de mora; figuraba con 4 días sin responder."}
+
+Cliente: Soy C-004. ¿Cuánto debo? ¿Si pago la mitad hoy me quitan la mora? ¿Y a qué cuenta consigno?
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Su saldo pendiente es de $1.680.000. Quitar la mora por un pago parcial lo decide Laura, Coordinadora de Cartera, en horario hábil. Puede pagar por Nequi 300-000-0000 o Bancolombia Ahorros 000-000000-00.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-004 - Revisión de Descuento | Pregunta si pagando la mitad le quitan la mora | Mensaje: \\"Hola Laura, el cliente C-004 requiere tu validación por condonación de mora. Revisar en bandeja.\\"","notas":"C-004 figuraba con 4 días sin responder; ya contestó."}
+
+Cliente: Soy C-002. ¿De cuánto es mi cuota mensual y cuántas cuotas me faltan?
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Su saldo pendiente es de $1.260.000. El valor de la cuota y las cuotas restantes no figuran en nuestra base; lo escalo con Laura, Coordinadora de Cartera, para confirmarlo.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-002 - Revisión de Consulta | Pide valor de la cuota y cuotas restantes, que no están en la base | Mensaje: \\"Hola Laura, el cliente C-002 requiere tu validación por consulta de cuota. Revisar en bandeja.\\"","notas":"No se calculó la cuota: la base solo tiene cuotas vencidas."}
+
+Cliente: Soy C-014. Ya no quiero la lavadora, ¿si la devuelvo me regresan la plata que pagué?
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Lamentamos su situación. No aceptamos devoluciones de productos usados ni reembolsamos lo pagado. Su caso pasó a Laura, Coordinadora de Cartera, quien le responderá en horario hábil.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-014 - Revisión de Devolución | Pide devolver la lavadora y el reembolso de lo pagado | Mensaje: \\"Hola Laura, el cliente C-014 requiere tu validación por devolución. Revisar en bandeja.\\"","notas":"Política 4.6. Saldo $1.470.000; figuraba con 5 días sin responder."}
+
+Cliente: Soy C-003. Ya hice la transferencia, les adjunto el comprobante para que me borren la mora.
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Gracias por enviar su comprobante. Laura, Coordinadora de Cartera, validará el pago con el banco en horario hábil antes de registrar el abono.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-003 - Revisión de Comprobante | Envía comprobante y pide retirar la mora | Mensaje: \\"Hola Laura, el cliente C-003 requiere tu validación por comprobante. Revisar en bandeja.\\"","notas":"Saldo $1.575.000, 128 días de mora. No se prometió retirar la mora."}
+
+Cliente: Hola, soy Marta Gómez, cédula 43.567.890, ¿cuánto debo?
+{"ruta":"[CONSULTA DE SALDO]","borrador":"Con gusto le ayudamos. Por su seguridad, no comparta su nombre ni su documento por este medio. Escríbanos solo su código de cliente (por ejemplo, C-000).","ficha":"","notas":"El cliente compartió datos personales; no se repitieron ni se usaron."}
+
+Cliente: Mi esposo es el cliente C-015 pero está hospitalizado. ¿Cuánto debe?
+{"ruta":"[COMPROBANTE O EXCEPCIÓN - ESCALAR A LAURA]","borrador":"Lamentamos la situación. Por protección de datos, la información del crédito solo se entrega al titular. Su solicitud pasó a revisión de Laura, Coordinadora de Cartera, en horario hábil.","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-015 - Revisión de Tercero | Un familiar pide el saldo del titular | Mensaje: \\"Hola Laura, el cliente C-015 requiere tu validación por solicitud de un tercero. Revisar en bandeja.\\"","notas":"No se entregaron datos del crédito."}
+
+Cliente: Hola, soy el cliente 2, ¿cuánto debo?
+{"ruta":"[CONSULTA DE SALDO]","borrador":"Con gusto. Para darle información de su crédito necesitamos su código completo, con el formato C-000. ¿Nos lo comparte, por favor?","ficha":"","notas":"Código incompleto: no se supuso cuál era."}
+
+Cliente: Soy C-025, ¿cuánto debo?
+{"ruta":"[CONSULTA DE SALDO]","borrador":"No encontramos el código C-025 en nuestra base. Por favor revíselo y escríbanos su código de cliente completo.","ficha":"","notas":"Código inexistente."}
+
+Mensaje interno: Revisa el estado del cliente C-005 y dime qué acción sigue.
+{"ruta":"[ALERTA SIN RESPUESTA >3 DÍAS]","borrador":"","ficha":"FICHA DE ESCALAMIENTO A LAURA: Asunto: C-005 - Alerta sin respuesta (>3 días) | Programar llamada telefónica por un asesor humano | Mensaje: \\"Hola Laura, el cliente C-005 requiere tu validación por silencio mayor a 3 días. Revisar en bandeja.\\"","notas":"6 días sin responder, 140 días de mora, $1.800.000 sin ningún pago: prioridad alta."}`;
+
+
+const FORMATO = `Responde SIEMPRE SOLO con un objeto JSON: {"ruta": "etiqueta exacta", "borrador": "mensaje para el cliente (máx. 40 palabras; vacío solo en ALERTA)", "ficha": "línea completa de la ficha o vacío", "notas": "nota breve para Laura sin datos personales, o vacío"}`;
+
+
+const $=id=>document.getElementById(id);
+const log=$("log"),t=$("t"),b=$("b"),app=$("app");
+let hist=[];
+const hora=()=>new Date().toLocaleTimeString("es-CO",{hour:"numeric",minute:"2-digit"});
+const words=s=>(String(s).trim().match(/\S+/g)||[]).length;
+function add(cls,text){const d=document.createElement("div");d.className="msg "+cls;d.textContent=text;const s=document.createElement("span");s.className="time";s.textContent=hora();d.appendChild(s);log.appendChild(d);log.scrollTop=log.scrollHeight;return d;}
+function sys(text){const d=document.createElement("div");d.className="sys";d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight;return d;}
+function laura(r){
+ const d=document.createElement("div");d.className="laura";
+ const h=document.createElement("b");h.textContent="Vista de Laura · el cliente no ve esto";d.appendChild(h);d.appendChild(document.createElement("br"));
+ const ru=document.createElement("span");ru.className="r";ru.textContent=r.ruta||"(sin ruta)";d.appendChild(ru);
+ const line=(lbl,v)=>{if(!v)return;const p=document.createElement("p");p.textContent=lbl+v;d.appendChild(p);};
+ if(r.borrador) line("Borrador: ",words(r.borrador)+" palabras · Laura lo aprueba antes de enviarlo");
+ line("",r.ficha); line("Notas: ",r.notas);
+ log.appendChild(d);log.scrollTop=log.scrollHeight;
+}
+function parse(text){const m=String(text).match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0]);}catch(e){}}return {ruta:"",borrador:String(text),ficha:"",notas:""};}
+function start(){log.innerHTML="";hist=[];sys("Hoy");add("them","¡Hola! Bienvenido a CrediMedallo Hogar. Para ayudarle con su crédito, escríbanos su consulta junto con su código de cliente (por ejemplo, C-000).");}
+start();
+$("mode").addEventListener("change",e=>app.classList.toggle("on",e.target.checked));
+$("clear").addEventListener("click",()=>{start();t.focus();});
+function pedirApiKey(){
+ const actual = (typeof localStorage !== "undefined" && localStorage.getItem("GEMINI_API_KEY")) || "";
+ const k = prompt("Ingresa tu API Key de Gemini (aistudio.google.com):", actual);
+ if(k !== null && k.trim()){
+  localStorage.setItem("GEMINI_API_KEY", k.trim());
+  API_KEY = k.trim();
+  sys("✅ Clave de Gemini API guardada.");
+ }
+}
+$("set-key")?.addEventListener("click", pedirApiKey);
+if(!API_KEY||API_KEY.startsWith("PEGA")){
+ const d = sys("⚠️ Falta configurar la clave de la API en config.js. ");
+ const btn = document.createElement("button");
+ btn.textContent = "🔑 Ingresar API Key";
+ btn.style.cssText = "display:inline-block;margin-top:6px;padding:4px 12px;border-radius:6px;background:var(--brand2);color:#fff;border:none;cursor:pointer;font-size:13px;font-family:inherit;";
+ btn.onclick = pedirApiKey;
+ d.appendChild(document.createElement("br"));
+ d.appendChild(btn);
+}
+let POLITICAS="",BASE="";
+const listo=(async()=>{
+ try{
+  const [pt,xb]=await Promise.all([
+   fetch("politicas_cobro_credimedallo.txt").then(r=>{if(!r.ok)throw new Error("No se encontró politicas_cobro_credimedallo.txt");return r.text();}),
+   fetch("base_cartera_credimedallo.xlsx").then(r=>{if(!r.ok)throw new Error("No se encontró base_cartera_credimedallo.xlsx");return r.arrayBuffer();})
+  ]);
+  POLITICAS=pt;
+  const wb=XLSX.read(xb,{type:"array"});
+  const filas=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+  BASE=filas.filter(f=>f.length).map(f=>f.join(" | ")).join("\n");
+  if(filas.length<2) throw new Error("La base de cartera está vacía");
+ }catch(e){sys("Error cargando los datos: "+e.message+". Si abriste el archivo con doble clic, usa un servidor local (ver README).");throw e;}
+})();
+
+async function preguntar(msg){
+ const contents=[...hist.slice(-8).map(h=>({role:h.r==="c"?"user":"model",parts:[{text:h.x}]})),{role:"user",parts:[{text:msg}]}];
+ const body={
+  systemInstruction:{parts:[{text:SISTEMA+"\n\nPOLÍTICAS\n"+POLITICAS+"\n\nBASE DE CARTERA\n"+BASE+"\n\n"+EJEMPLOS+"\n\n"+FORMATO}]},
+  contents,
+  generationConfig:{temperature:0.2,responseMimeType:"application/json"}
+ };
+ const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+ const data=await res.json();
+ if(!res.ok) throw new Error((data.error&&data.error.message)||("HTTP "+res.status));
+ const text=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+ return parse(text);
+}
+
+$("f").addEventListener("submit",async ev=>{
+ ev.preventDefault();
+ const msg=t.value.trim(); if(!msg) return;
+ t.value=""; add("me",msg); b.disabled=true;
+ const typing=document.createElement("div");typing.className="typing";typing.textContent="escribiendo…";log.appendChild(typing);log.scrollTop=log.scrollHeight;
+ try{
+  await listo;
+  const r=await preguntar(msg);
+  typing.remove();
+  hist.push({r:"c",x:msg});
+  if(r.borrador){add("them",r.borrador);hist.push({r:"a",x:JSON.stringify(r)});}
+  else{sys("Su caso pasó a revisión de Laura, Coordinadora de Cartera.");hist.push({r:"a",x:JSON.stringify(r)});}
+  laura(r);
+ }catch(e){
+  typing.remove();
+  sys("No se pudo responder: "+e.message);
+ }finally{b.disabled=false;t.focus();}
+});
+t.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();$("f").requestSubmit();}});
+}
+</script>
+</body>
+</html>
